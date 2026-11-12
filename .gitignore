@@ -1,0 +1,13 @@
+# Dữ liệu thô — không đẩy lên GitHub (nặng, có thể chứa thông tin nhạy cảm)
+*.pcap
+*.pcapng
+eve.json
+fast.log
+*.log
+logs/
+captures/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

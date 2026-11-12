@@ -1,0 +1,33 @@
+# =============================================================================
+#  local.rules — Rule Suricata tự viết cho Security Home Lab
+#  Cài đặt : /etc/suricata/rules/local.rules
+#  Quy ước : sid 1000001 trở lên (dải 1000000–1999999 dành cho rule cục bộ)
+#            msg bắt đầu bằng "LAB " để lọc nhanh trong log; chỉ dùng ký tự ASCII
+#            Mỗi lần sửa nội dung rule thì tăng rev
+#  Kiểm tra: sudo suricata -T -c /etc/suricata/suricata.yaml -v
+#  Nạp lại : sudo suricatasc -c reload-rules
+#
+#  Lưu ý: Kali (attacker) cũng nằm trong HOME_NET = 10.10.10.0/24, vì vậy
+#  nguồn dùng "any" thay vì $EXTERNAL_NET — nếu không rule sẽ không bao giờ khớp.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# [01] Rule test ICMP — chứng minh Suricata nhìn thấy lưu lượng trong labnet
+#   alert           : hành động — ghi cảnh báo (không chặn, vì đang ở chế độ IDS)
+#   icmp            : giao thức
+#   any any -> $HOME_NET any : từ bất kỳ đâu tới bất kỳ máy nào trong lab
+#   itype:8         : ICMP type 8 = Echo Request (ping). Không bắt Echo Reply
+#                     (type 0) để mỗi lần ping chỉ ra 1 cảnh báo thay vì 2
+#   classtype       : phân loại, quyết định priority mặc định (misc-activity = 3)
+#   sid / rev       : mã định danh duy nhất / phiên bản của rule
+# ATT&CK: T1018 Remote System Discovery (ping để tìm máy đang sống)
+# -----------------------------------------------------------------------------
+alert icmp any any -> $HOME_NET any (msg:"LAB ICMP Echo Request vao HOME_NET"; itype:8; classtype:misc-activity; sid:1000001; rev:1;)
+
+# -----------------------------------------------------------------------------
+# Các rule tiếp theo theo lộ trình (thêm khi làm tới):
+#   1000010–1000019 : Ngày 3   — quét cổng (SYN scan, NULL/FIN/Xmas scan)
+#   1000020–1000049 : Ngày 4–5 — DVWA (SQLi, XSS, command injection)
+#   1000050–1000059 : Ngày 6   — brute-force SSH (threshold / detection_filter)
+#   1000060–1000079 : Ngày 7   — khai thác dịch vụ Metasploitable2
+# -----------------------------------------------------------------------------
